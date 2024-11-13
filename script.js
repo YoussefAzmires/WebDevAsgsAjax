@@ -65,7 +65,7 @@ function DisplayInfo(data) {
             description.style.display = "none";  
         }
       });
-  });
+  }); 
 } 
 
 // Keep your input event listener
