@@ -36,6 +36,7 @@ function DisplayInfo(data) {
   
   data.slice(0, 3).forEach((item) => {
       const show = item.show;
+      //obscure line of code but the regex (that is straight out from stack Overflow) is to remove all the trailling signs bcs otherwise its ugly but whatever 
       const summary = show.summary
           ? show.summary.replace(/<[^>]*>/g, "")
           : "No description available";
@@ -45,9 +46,9 @@ function DisplayInfo(data) {
               <img src="${show.image.medium}" alt="${show.name}">
               <p>Name: ${show.name}</p>
               <p>Rating: ${show.rating.average || "N/A"}</p>
-              <p class="description" style="display: none;">Description: ${summary}</p>
+              <p class="description" style="display: none;">Description: ${summary}</p> 
           </div>
-      `;
+      `; //the display none is to make the description start off by being hidden and only appear when its clicked
   });
 
   resultDiv.innerHTML = html;
@@ -56,7 +57,13 @@ function DisplayInfo(data) {
   cards.forEach((card) => {
       card.addEventListener("click", () => {
           const description = card.querySelector(".description");
-          description.style.display = description.style.display === "none" ? "block" : "none";
+
+          //when the user clicks, if the description was not showing (none), it will show (block), if it was not showing (block) it becomes not showing (none) Crazy logic i know
+          if (description.style.display === "none") {
+            description.style.display = "block";  
+          } else {
+            description.style.display = "none";  
+        }
       });
   });
 } 
