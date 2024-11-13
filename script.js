@@ -19,7 +19,6 @@ async function FetchData() {
     }
 
     const data = await response.json();
-    console.log(data);
 
     if (data.length === 0) {
       resultDiv.innerHTML = "<p>No shows found</p>";
@@ -53,32 +52,24 @@ function DisplayInfo(data) {
 
   resultDiv.innerHTML = html;
 
-  //**here i am facing a problem, it keeps printing the description everytime i click.**
-  let counter = 0; 
 
   const cards = document.querySelectorAll(".show-card");
   cards.forEach((card) => {
-    card.addEventListener("click", () => {
-      counter++; //  increment counter everytime its clicked
+    let isDescriptionShown = false; // toggle flag for each card
 
-      // Get the description from the data-summary attribute
+    card.addEventListener("click", () => {
       const summary = card.getAttribute("data-summary");
 
-      // Display or hide the description based on whether the counter is even or odd
-      if (counter % 2 === 0) {
-        // If the click counter is even, display the description
-        card.innerHTML = `
-                    ${card.innerHTML}
-                    <p>Description: ${summary}</p>
-
-                `;
+      if (!isDescriptionShown) {
+        card.innerHTML += `<p class="description">Description: ${summary}</p>`;
       } else {
-        // If the counter is odd, remove the description
-        const descriptionElement = card.querySelector("p:last-child");
+        const descriptionElement = card.querySelector(".description");
         if (descriptionElement) {
-          descriptionElement.remove(); // Remove the last paragraph (description)
+          descriptionElement.remove();
         }
       }
+
+      isDescriptionShown = !isDescriptionShown; // toggle the flag
     });
   });
 }
