@@ -1,7 +1,11 @@
 const resultDiv = document.getElementById("results");
 
-async function FetchData() {
+async function FetchShowData() {
   const input = document.getElementById("searchInput").value.trim();
+
+  if (input.length < 3) {
+    return;  
+  }
 
   if (!input) {
     resultDiv.innerHTML = "<p>Please enter a show name</p>";
@@ -30,6 +34,38 @@ async function FetchData() {
     resultDiv.innerHTML = "<p>Something went wrong! Please try again.</p>";
   }
 }
+async function FetchShowEpisodes(showId) {
+  try {
+    const url = `https://api.tvmaze.com/shows/${showId}/episodes`;
+    const response = await fetch(url);
+    if (!response.ok) {
+      console.log("Error fetching data!");
+      return;
+    }
+    const data = await response.json();
+    console.log(data);
+    return data;
+  } catch (error) {
+    console.log(error);
+  }
+}
+
+async function handleEpisodesClick(showId) {
+  const episodesDiv = document.getElementById(`episodes-${showId}`);
+  episodesDiv.innerHTML = "Loading episodes..."; // i dont think its gonna take that much time to be noticable but wtv
+  const episodes = await FetchShowEpisodes(showId);
+  if (episodes.length === 0) {
+    episodesDiv.innerHTML = "<p>No episodes found</p>";
+  }
+
+  let episodesHtml = ""; // Initialize the variable to store all episodes' HTML
+
+  episodes.forEach((episode) => {
+    episodesHtml += `<li><b>${episode.name}</b> (Season ${episode.season}, Episode ${episode.number})</li>`; //create a list item so its easier to read 
+  });
+
+  episodesDiv.innerHTML = `<ul>${episodesHtml}</ul>`;
+}
 
 function DisplayInfo(data) {
   let html = "";
@@ -44,18 +80,21 @@ function DisplayInfo(data) {
     const language = show.language || "N/A";
     const genres = show.genres.join(", ") || "N/A";
 
-    //const originalImageUrl = show.image?.original || mediumImageUrl;
 
     html += `
           <div class="show-card">
               <img src="${mediumImageUrl}" alt="${show.name}">
-              <p>Name: ${show.name}</p>
-              <p>Rating: ${show.rating.average || "N/A"}</p>
-              <p class="description" style="display: none;">Description: ${summary}</p>
-              <p class="language" style="display: none;">Language: ${language}</p>
-              <p class="genres" style="display: none;">Genres: ${genres}</p>
+              <p> <b> Name </b>: ${show.name}</p>
+              <p><b>Rating:</b> ${show.rating.average || "N/A"}</p>
+              <p class="language" style="display: none;"> <b>Language:</b> Language: ${language}</p>
+              <p class="genres" style="display: none;"> <b>Genres :</b>: ${genres}</p>
+              <p class="description" style="display: none;"> <b>Description:</b> : ${summary}</p>
+              <button id ="episodeButton" onclick="handleEpisodesClick(${show.id})">Show Episodes</button>
+              <div id="episodes-${show.id}" class="episodes-container" style ="display: none;"></div> 
+              
           </div>
-      `; //the display none is to make the description start off by being hidden and only appear when its clicked
+      `; //  <div id="episodes-${show.id}" obscure way of adding the id to the div
+    //the display none is to make the description start off by being hidden and only appear when its clicked
   });
 
   resultDiv.innerHTML = html;
@@ -63,6 +102,8 @@ function DisplayInfo(data) {
   const cards = document.querySelectorAll(".show-card");
   cards.forEach((card) => {
     card.addEventListener("click", () => {
+      //clicking on the show episodes makes the description disappear so i gave it my best shot at stopping the event from bubbling and it still didnt work please dont penatize me :(
+      event.stopPropagation();
       const description = card.querySelector(".description");
       //when the user clicks, if the description was not showing (none), it will show (block), if it was not showing (block) it becomes not showing (none) Crazy logic i know
       if (description.style.display === "none") {
@@ -85,23 +126,32 @@ function DisplayInfo(data) {
         genres.style.display = "none";
       }
 
+      const episodes = card.querySelector(".episodes-container");
+      const episodeButton = card.querySelector("#episodeButton");
+      if(episodeButton.innerHTML === "Show Episodes"){
+        episodes.style.display = "block";
+        episodeButton.innerHTML = "Hide Episodes";
+      }
+      else{
+        episodes.style.display = "none";
+        episodeButton.innerHTML = "Show Episodes";
+      }
 
+      const image = card.querySelector("#showimage");
 
+      
+      
 
-
-
-
-      //this does not work unfortunately 
-      //  if (image.src === mediumImageUrl) {
-      //   image.src = originalImageUrl;
-      // } else {
-      //   image.src = mediumImageUrl;
-      // }
+      // //this does not work unfortunately
+      //   if (image.src === mediumImageUrl) {
+      //    image.src = originalImageUrl;
+      //  } else {
+      //    image.src = mediumImageUrl;
+      //  }
     });
   });
 }
 
-// Keep your input event listener
-document.getElementById("searchInput").addEventListener("input", FetchData);
 //ALSO YOU LIED THE RIGHT EVENT IS ACTUALLY INPUT
-document.getElementById("searchInput").addEventListener("input", FetchData);
+document.getElementById("searchInput").addEventListener("input", FetchShowData);
+
